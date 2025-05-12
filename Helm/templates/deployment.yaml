@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "carwebapi.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "carwebapi.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "carwebapi.name" . }}
+    spec:
+      containers:
+        - name: carwebapi
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: {{ .Values.env.ASPNETCORE_ENVIRONMENT | quote }}
+            - name: ConnectionStrings__DefaultConnection
+              value: {{ .Values.env.ConnectionStrings__DefaultConnection | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
