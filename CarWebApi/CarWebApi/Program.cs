@@ -16,6 +16,11 @@ public class Program
 
         builder.Host.UseSerilog();
 
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.Configure(builder.Configuration.GetSection("Kestrel"));
+        });
+
         // add configs
         builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -42,11 +47,16 @@ public class Program
         //if (app.Environment.IsDevelopment())
         //{
         app.MapOpenApi();
-        app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "EV Cars"));
+        app.UseSwaggerUI(o =>
+        {
+            // This tells Swagger UI to look for the OpenAPI spec at the correct path
+            o.SwaggerEndpoint("/openapi/v1.json", "EV Cars");
+            o.RoutePrefix = string.Empty; // This ensures Swagger UI loads from root, not /swagger/
+        });
         //}
 
         // Configure the HTTP request pipeline.
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection();
 
         app.UseAuthorization();
 

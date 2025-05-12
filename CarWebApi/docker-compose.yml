@@ -1,0 +1,6 @@
+services:
+  carwebapi:
+    image: ${DOCKER_REGISTRY-}carwebapi
+    build:
+      context: .
+      dockerfile: CarWebApi/Dockerfile

@@ -13,6 +13,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CarWebApi/CarWebApi.csproj", "CarWebApi/"]
+COPY ["EvDataModels/EvDataModels.csproj", "EvDataModels/"]
 RUN dotnet restore "./CarWebApi/CarWebApi.csproj"
 COPY . .
 WORKDIR "/src/CarWebApi"
