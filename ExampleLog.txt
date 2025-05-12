@@ -1,0 +1,27 @@
+2025-05-12 00:17:56.327 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/swagger/index.html - null null
+2025-05-12 00:17:56.357 -05:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-05-12 00:17:56.366 -05:00 [INF] Hosting environment: Development
+2025-05-12 00:17:56.366 -05:00 [INF] Content root path: D:\Workspace\Vertex\CarWebApi\CarWebApi
+2025-05-12 00:17:56.569 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/swagger/index.html - 200 null text/html;charset=utf-8 256.1392ms
+2025-05-12 00:17:57.048 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/_framework/aspnetcore-browser-refresh.js - null null
+2025-05-12 00:17:57.048 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/_vs/browserLink - null null
+2025-05-12 00:17:57.057 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/_framework/aspnetcore-browser-refresh.js - 200 16503 application/javascript; charset=utf-8 5.3307ms
+2025-05-12 00:17:57.079 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/_vs/browserLink - 200 null text/javascript; charset=UTF-8 32.3666ms
+2025-05-12 00:17:57.273 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/openapi/v1.json - null null
+2025-05-12 00:17:57.281 -05:00 [INF] Executing endpoint 'HTTP: GET /openapi/{documentName}.json'
+2025-05-12 00:17:57.587 -05:00 [INF] Executed endpoint 'HTTP: GET /openapi/{documentName}.json'
+2025-05-12 00:17:57.588 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/openapi/v1.json - 200 null application/json;charset=utf-8 315.2649ms
+2025-05-12 00:18:08.417 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/CafvTypes - null null
+2025-05-12 00:18:08.418 -05:00 [INF] Executing endpoint 'CarWebApi.Controllers.CafvTypesController.Get (CarWebApi)'
+2025-05-12 00:18:08.436 -05:00 [INF] Route matched with {action = "Get", controller = "CafvTypes"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Get() on controller CarWebApi.Controllers.CafvTypesController (CarWebApi).
+2025-05-12 00:18:08.442 -05:00 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[CarWebApi.EvDataModels.DTOs.EnumIdentifier, EvDataModels, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-05-12 00:18:08.447 -05:00 [INF] Executed action CarWebApi.Controllers.CafvTypesController.Get (CarWebApi) in 8.7455ms
+2025-05-12 00:18:08.448 -05:00 [INF] Executed endpoint 'CarWebApi.Controllers.CafvTypesController.Get (CarWebApi)'
+2025-05-12 00:18:08.448 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/CafvTypes - 200 null application/json; charset=utf-8 31.0791ms
+2025-05-12 00:18:09.759 -05:00 [INF] Request starting HTTP/2 GET https://localhost:44353/CafvTypes - null null
+2025-05-12 00:18:09.760 -05:00 [INF] Executing endpoint 'CarWebApi.Controllers.CafvTypesController.Get (CarWebApi)'
+2025-05-12 00:18:09.760 -05:00 [INF] Route matched with {action = "Get", controller = "CafvTypes"}. Executing controller action with signature Microsoft.AspNetCore.Mvc.IActionResult Get() on controller CarWebApi.Controllers.CafvTypesController (CarWebApi).
+2025-05-12 00:18:09.760 -05:00 [INF] Executing OkObjectResult, writing value of type 'System.Collections.Generic.List`1[[CarWebApi.EvDataModels.DTOs.EnumIdentifier, EvDataModels, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2025-05-12 00:18:09.761 -05:00 [INF] Executed action CarWebApi.Controllers.CafvTypesController.Get (CarWebApi) in 0.9706ms
+2025-05-12 00:18:09.761 -05:00 [INF] Executed endpoint 'CarWebApi.Controllers.CafvTypesController.Get (CarWebApi)'
+2025-05-12 00:18:09.761 -05:00 [INF] Request finished HTTP/2 GET https://localhost:44353/CafvTypes - 200 null application/json; charset=utf-8 1.9731ms

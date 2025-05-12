@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Loader": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\Workspace\\Vertex\\data.json"
+    }
+  }
+}
