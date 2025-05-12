@@ -16,12 +16,12 @@ Though this was better handled with the "Loader" project, an abbreviated set of 
 # Create REST API
 	Create a REST API to expose CRUD operations for the database using any language (Java Preferred)
 
-This is provided via the CarWebApi project.
+This is provided via the CarWebApi project, details can be found in `How To Run.md`
 
 # Create Tests 
 	Provide appropriate testing for you application
 
-There are both functional and unit tests, where applicable
+There are both functional and unit tests, where applicable. Running is obvious, but additional details can be found in `How To Run.md`
 
 # Create Documentation 
 	Provide appropriate documentation on running your application
