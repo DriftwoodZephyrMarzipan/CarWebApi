@@ -1,17 +1,17 @@
 # Download data
 	Download the latest Electric Vehicle Population Data (https://catalog.data.gov/dataset/electric-vehicle-population-data) dataset from data.gov in any format, CSV is downloaded from https://data.wa.gov/api/views/f6w7-q2d2/rows.csv?accessType=DOWNLOAD
 
-See `data.json`
+See `Database/data.json`
 
 # Create Schema
 	Create a schema for this data using PostgreSQL
 
-See `evs_schema.sql`
+See `Database/evs_schema.sql`
 
 # Create data inserts
 	Create appropriate data inserts using PostgreSQL
 
-Though this was better handled with the "Loader" project, an abbreviated set of examples can be found in `insert_makes_data.sql`, `insert_models_data.sql` and `insert_cars_data.sql`. Take care to run them in that order.
+Though this was better handled with the "Loader" project, an abbreviated set of examples can be found in `insert_makes_data.sql`, `insert_models_data.sql` and `insert_cars_data.sql` all in the `Database` directory. Take care to run them in that order.
 
 # Create REST API
 	Create a REST API to expose CRUD operations for the database using any language (Java Preferred)
