@@ -1,5 +1,7 @@
 replicaCount: 1
 
+revisionHistoryLimit: 1
+
 image:
   repository: pdughi/carwebapi
   tag: latest
@@ -13,4 +15,10 @@ env:
   ASPNETCORE_ENVIRONMENT: "Production"
   ConnectionStrings__DefaultConnection: "Host=postgres;Database=carwebapi;Username=postgres;Password=Password"
 
-resources: {}
+resources:
+  limits:
+    cpu: "1"
+    memory: 512Mi
+  requests:
+    cpu: "200"
+    memory: 64Mi
