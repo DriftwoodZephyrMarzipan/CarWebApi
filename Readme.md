@@ -41,4 +41,6 @@ This is provided as a class library, CarWebApiClientLibrary. Separate documentat
 
 This was somewhat vague, a somewhat vague answer is provided in `HowToUpdateTesla.md`
 
+# Helm
 
+Helm scripts are located in the /Helm subdirectory
