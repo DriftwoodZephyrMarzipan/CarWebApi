@@ -1,4 +1,6 @@
 using CarWebApi.Data.Repositories;
+using CarWebApi.Middleware;
+using CarWebApi.Services;
 using Serilog;
 
 namespace CarWebApi;
@@ -38,8 +40,9 @@ public class Program
 
 
         builder.Services.AddEndpointsApiExplorer();
-
         builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
+        builder.Services.AddSingleton<IRequestTelemetryService, RequestTelemetryService>();
+        builder.Services.AddSingleton<IDatabaseTelemetryService, DatabaseTelemetryService>();
         builder.Services.AddSingleton<ICarRepository, PostGreSQLCarRepository>();
 
         var app = builder.Build();
@@ -59,6 +62,8 @@ public class Program
         // app.UseHttpsRedirection();
 
         app.UseAuthorization();
+
+        app.UseMiddleware<EndpointTelemetryMiddleware>();
 
         app.MapControllers();
 

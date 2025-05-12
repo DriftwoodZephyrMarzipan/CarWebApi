@@ -49,6 +49,12 @@ services:
       - "8081:8081"
 ```
 
+You can also use the following environmental variables for http and https ports, respectively.
+```
+ASPNETCORE__Kestrel__Endpoints__Http__Url=http://+:<pick your port>
+ASPNETCORE__Kestrel__Endpoints__Https__Url=https://+:<pick your port>
+```
+to override
 This file can be found in the same directory as the solution file, `/CarWebApi/docker-compose.override.yml`. Note that when used with linux, you may need to use the host `172.17.0.1` to reference localhost instead of `host.docker.internal`, if that alias is not setup.
 
 # Launching

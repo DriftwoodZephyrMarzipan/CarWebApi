@@ -3,24 +3,34 @@ using CarWebApi.EvDataModels.DTOs;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using NpgsqlTypes;
-using System.Numerics;
-using System.Reflection;
+using CarWebApi.Services;
+using System.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CarWebApi.Data.Repositories;
 
 public class PostGreSQLCarRepository : ICarRepository
 {
     private readonly string _connectionString;
-    public PostGreSQLCarRepository(string connectionString)
+    private readonly IDatabaseTelemetryService _telemetryService = null!;
+
+    public PostGreSQLCarRepository(string connectionString, IDatabaseTelemetryService telemetryService = null)
     {
         _connectionString = connectionString;
+        _telemetryService = telemetryService;
+        if(_telemetryService == null)
+        {
+            // fine, just ignore it.
+            _telemetryService = new DatabaseTelemetryService(new NullLogger<DatabaseTelemetryService>());
+        }
     }
 
     // Could use IOptionsMonitor pattern, but I don't foresee this changing in real time
     // much.
-    public PostGreSQLCarRepository(IOptions<ConnectionStrings> dbSettings)
+    public PostGreSQLCarRepository(IOptions<ConnectionStrings> dbSettings, IDatabaseTelemetryService telemetryService)
     {
-        this._connectionString = dbSettings.Value.DefaultConnection;
+        _connectionString = dbSettings.Value.DefaultConnection;
+        _telemetryService = telemetryService;
     }
 
     public async Task<Make> GetMakeByIdAsync(int id)
@@ -31,6 +41,9 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("SELECT * FROM evs.makes WHERE id = @id", connection))
         {
             command.Parameters.AddWithValue("id", id);
+
+            var stopwatch = Stopwatch.StartNew();
+
             using (var reader = await command.ExecuteReaderAsync())
             {
                 if (await reader.ReadAsync())
@@ -42,6 +55,9 @@ public class PostGreSQLCarRepository : ICarRepository
                     };
                 }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
+
         }
         return make;
     }
@@ -52,13 +68,18 @@ public class PostGreSQLCarRepository : ICarRepository
         await connection.OpenAsync();
         var idList = new IdList() { DataType = "make" };
         using (var command = new NpgsqlCommand("SELECT id FROM evs.makes", connection))
-        using (var reader = await command.ExecuteReaderAsync())
         {
-            while (await reader.ReadAsync())
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                var makeId = reader.GetInt32(0);
-                idList.Ids.Add(makeId);
+                while (await reader.ReadAsync())
+                {
+                    var makeId = reader.GetInt32(0);
+                    idList.Ids.Add(makeId);
+                }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return idList;
     }
@@ -69,17 +90,22 @@ public class PostGreSQLCarRepository : ICarRepository
         await connection.OpenAsync();
         var makes = new List<Make>();
         using (var command = new NpgsqlCommand("SELECT * FROM evs.makes", connection))
-        using (var reader = await command.ExecuteReaderAsync())
         {
-            while (await reader.ReadAsync())
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                var make = new Make
+                while (await reader.ReadAsync())
                 {
-                    Id = reader.GetInt32(0),
-                    Manufacturer = reader.GetString(1)
-                };
-                makes.Add(make);
+                    var make = new Make
+                    {
+                        Id = reader.GetInt32(0),
+                        Manufacturer = reader.GetString(1)
+                    };
+                    makes.Add(make);
+                }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return makes;
     }
@@ -99,12 +125,14 @@ public class PostGreSQLCarRepository : ICarRepository
             // Use ExecuteScalarAsync to fetch the returned ID
             var result = await command.ExecuteScalarAsync();
 
+            var stopwatch = Stopwatch.StartNew();
             if (result != null && int.TryParse(result.ToString(), out var id))
             {
                 make.Id = id; // Set the ID on the Make object
                 return true;
             }
-
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return false; // Return false if the ID could not be retrieved
         }
     }
@@ -122,7 +150,11 @@ public class PostGreSQLCarRepository : ICarRepository
         {
             command.Parameters.AddWithValue("name", make.Manufacturer);
             command.Parameters.AddWithValue("id", make.Id);
+
+            var stopwatch = Stopwatch.StartNew();
             var rowsAffected = await command.ExecuteNonQueryAsync();
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
@@ -139,7 +171,10 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("delete from evs.makes WHERE id = @id", connection))
         {
             command.Parameters.AddWithValue("id", id);
-            var rowsAffected = await command.ExecuteNonQueryAsync();
+            var stopwatch = Stopwatch.StartNew();
+            var rowsAffected = await command.ExecuteNonQueryAsync(); 
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
@@ -152,6 +187,7 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("SELECT * FROM evs.models WHERE id = @modelId", connection))
         {
             command.Parameters.AddWithValue("modelId", modelId);
+            var stopwatch = Stopwatch.StartNew();
             using (var reader = await command.ExecuteReaderAsync())
             {
                 if (await reader.ReadAsync())
@@ -169,6 +205,8 @@ public class PostGreSQLCarRepository : ICarRepository
                     };
                 }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return model;
     }
@@ -179,13 +217,18 @@ public class PostGreSQLCarRepository : ICarRepository
         await connection.OpenAsync();
         var idList = new IdList() { DataType = "model" };
         using (var command = new NpgsqlCommand("SELECT id FROM evs.models", connection))
-        using (var reader = await command.ExecuteReaderAsync())
         {
-            while (await reader.ReadAsync())
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                var modelId = reader.GetInt32(0);
-                idList.Ids.Add(modelId);
+                while (await reader.ReadAsync())
+                {
+                    var modelId = reader.GetInt32(0);
+                    idList.Ids.Add(modelId);
+                }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return idList;
     }
@@ -197,6 +240,7 @@ public class PostGreSQLCarRepository : ICarRepository
         var models = new List<Model>();
         using (var command = new NpgsqlCommand("SELECT * FROM evs.models", connection))
         {
+            var stopwatch = Stopwatch.StartNew();
             using (var reader = await command.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
@@ -215,6 +259,8 @@ public class PostGreSQLCarRepository : ICarRepository
                     models.Add(model);
                 }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return models;
     }
@@ -226,7 +272,8 @@ public class PostGreSQLCarRepository : ICarRepository
         var models = new List<Model>();
         using (var command = new NpgsqlCommand("SELECT * FROM evs.models join evs.makes on makes.id = models.make_id WHERE make_id = @makeId", connection))
         {
-            command.Parameters.AddWithValue("makeId", make_id);
+            command.Parameters.AddWithValue("makeId", make_id); 
+            var stopwatch = Stopwatch.StartNew();
             using (var reader = await command.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
@@ -245,6 +292,8 @@ public class PostGreSQLCarRepository : ICarRepository
                     models.Add(model);
                 }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return models;
     }
@@ -272,8 +321,11 @@ public class PostGreSQLCarRepository : ICarRepository
             command.Parameters.AddWithValue("cafvType", (int)model.CafvType);
             command.Parameters.AddWithValue("electricRange", model.ElectricRange);
             command.Parameters.AddWithValue("baseMsrp", model.BaseMSRP);
+            var stopwatch = Stopwatch.StartNew();
             // Use ExecuteScalarAsync to fetch the returned ID
-            var result = await command.ExecuteScalarAsync();
+            var result = await command.ExecuteScalarAsync(); 
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             if (result != null && int.TryParse(result.ToString(), out var id))
             {
                 model.Id = id; // Set the ID on the Model object
@@ -304,7 +356,10 @@ public class PostGreSQLCarRepository : ICarRepository
             command.Parameters.AddWithValue("electricRange", model.ElectricRange);
             command.Parameters.AddWithValue("baseMsrp", model.BaseMSRP);
             command.Parameters.AddWithValue("id", model.Id);
-            var rowsAffected = await command.ExecuteNonQueryAsync();
+            var stopwatch = Stopwatch.StartNew();
+            var rowsAffected = await command.ExecuteNonQueryAsync(); 
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
@@ -321,7 +376,10 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("delete from evs.models WHERE id = @id", connection))
         {
             command.Parameters.AddWithValue("id", id);
+            var stopwatch = Stopwatch.StartNew();
             var rowsAffected = await command.ExecuteNonQueryAsync();
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
@@ -334,6 +392,7 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("SELECT * FROM evs.cars WHERE id = @carId", connection))
         {
             command.Parameters.AddWithValue("carId", carId);
+            var stopwatch = Stopwatch.StartNew();
             using (var reader = await command.ExecuteReaderAsync())
             {
                 if (await reader.ReadAsync())
@@ -363,6 +422,8 @@ public class PostGreSQLCarRepository : ICarRepository
                     };
                 }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return car;
     }
@@ -373,13 +434,18 @@ public class PostGreSQLCarRepository : ICarRepository
         await connection.OpenAsync();
         var idList = new IdList() { DataType = "car" };
         using (var command = new NpgsqlCommand("SELECT id FROM evs.cars", connection))
-        using (var reader = await command.ExecuteReaderAsync())
         {
-            while (await reader.ReadAsync())
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                var modelId = reader.GetInt32(0);
-                idList.Ids.Add(modelId);
+                while (await reader.ReadAsync())
+                {
+                    var modelId = reader.GetInt32(0);
+                    idList.Ids.Add(modelId);
+                }
             }
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
         }
         return idList;
     }
@@ -426,7 +492,10 @@ public class PostGreSQLCarRepository : ICarRepository
             command.Parameters.AddWithValue("legislative_district_boundary", car.LegislativeDistrictBoundary.HasValue ? car.LegislativeDistrictBoundary.Value : DBNull.Value);
 
             // Use ExecuteScalarAsync to fetch the returned ID
+            var stopwatch = Stopwatch.StartNew();
             var result = await command.ExecuteScalarAsync();
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             if (result != null && int.TryParse(result.ToString(), out var id))
             {
                 car.Id = id; // Set the ID on the Model object
@@ -474,7 +543,10 @@ public class PostGreSQLCarRepository : ICarRepository
             command.Parameters.AddWithValue("legislative_district_boundary", car.LegislativeDistrictBoundary.HasValue ? car.LegislativeDistrictBoundary.Value : DBNull.Value);
             command.Parameters.AddWithValue("id", car.Id);
 
+            var stopwatch = Stopwatch.StartNew();
             var rowsAffected = await command.ExecuteNonQueryAsync();
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
@@ -491,7 +563,10 @@ public class PostGreSQLCarRepository : ICarRepository
         using (var command = new NpgsqlCommand("delete from evs.cars WHERE id = @id", connection))
         {
             command.Parameters.AddWithValue("id", id);
+            var stopwatch = Stopwatch.StartNew();
             var rowsAffected = await command.ExecuteNonQueryAsync();
+            stopwatch.Stop();
+            _telemetryService.LogQuery(command.CommandText, stopwatch.ElapsedMilliseconds);
             return rowsAffected > 0;
         }
     }
